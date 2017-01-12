@@ -1,0 +1,84 @@
+body {
+    font-family: sans-serif;
+}
+header {
+    text-align: center;
+    font: inherit;
+}
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    /*border: dashed 1px blue;*/
+}
+.flex-item {
+    flex: 0 0 auto;
+    justify-content: center;
+    align-items: center;
+    /*border: dotted 1px green;*/
+}
+.flex-item.fg1 {
+    flex-grow: 1;
+}
+.flex-item.dash{
+    max-width: 8em;
+    margin-bottom: 1em;
+}
+button + button{
+    margin-left: .5em;
+}
+.button {
+    margin: 0 .2em 1em .2em;
+}
+.priceGroup {
+    background-color: white;
+    border: green thin solid;
+    border-radius: 5px;
+    text-align: center;
+}
+form[name="priceEditForm"] .priceGroup,
+.priceGroup form[name="previewPriceForm"]{
+    max-width: 7em;
+}
+.price {
+    font-size: 2em;
+    line-height: 1.8;
+    padding: 0 .3em;
+}
+.price::after {
+    content: "9";
+    font-size: .5em;
+    position: relative;
+    left: 0;
+    top: -1em;
+}
+.good {
+    background-color: #479090;
+}
+.caution {
+    background-color: yellow;
+}
+.error {
+    background-color: #FF523E;
+    padding-left: 1em;
+}
+.alert.in {
+    position: absolute;
+    top: 10em;
+    left: 35%;
+    min-width: 30%;
+    max-width: 30%;
+    z-index: 10;
+}
+.input-group {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.input-group-addon {
+    padding: 6px;
+    border: none;
+}
+.tnth {
+    font-size: .8em;
+    padding: 3px 9px 9px 3px;
+}

@@ -1,0 +1,239 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Sign Controller Prototype using VueJS 2.1 and Bootstrap 3.3.7</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+    <header class="text-center">
+        <h1>Goodies Store</h1>
+        <p class="text-center">Good food. Good drinks. Good gas.</p>
+    </header>
+    <main>
+        <h4 class="text-center">Sign Edit Dashboard</h4>
+        <form name="dashBoard" novalidate>
+            <div class="flex-container" style="justify-content: center;">
+                <div class="flex-item dash"
+                     v-for="(commodity, c) in commodities"
+                >
+                    <button type="button"
+                            class="btn btn-primary btn-lg"
+                            :title="'Go to price editing form for all price tiers for commodity: '+commodity.name"
+                            style="min-width: 6.2em;"
+                            data-toggle="modal"
+                            :data-target="'#'+commodity.name"
+                    v-text="commodity.name"></button>
+                    <label class="input-group"
+                           for="commodity.name+'Base'"
+                           style="display: block; text-align: center; margin-top: 3px;"
+                    >Base Price</label>
+                    <div class="input-group">
+                        <span class="input-group-addon">$</span>
+                        <input :id="commodity.name+'Base'"
+                               type="number" min="0" max="9.99" step="0.01"
+                               title="Edit price."
+                               v-model="commodity.price"
+                               @input="priceChange(commodity)"
+                               style="max-width: 5.1em;"
+                        >
+                        <span class="input-group-addon tnth"
+                              title="9 tenths is not changeable."
+                        >9</span>
+                    </div>
+                    <div class="flex-item"
+                         v-for="(tier, t) in tiers"
+                    >
+                        <div class="priceGroup"
+                             v-if="tier.id==0"
+                        >
+                            <h4 v-text="tier.name"></h4>
+                            <div class="price"
+                                 :title="commodity.priceTitle"
+                            v-text="(commodity.price+commodity.tierDiffs[t]).toFixed(2)"></div>
+                        </div><!-- .priceGroup -->
+                        <div class="priceGroup"
+                             v-if="tier.id>0"
+                             v-show="detail"
+                        >
+                            <h4 v-text="tier.name"></h4>
+                            <div class="price"
+                                 v-text="(commodity.price+commodity.tierDiffs[t]).toFixed(2)"></div>
+                        </div><!-- .priceGroup -->
+                    </div><!-- .flex-item tier in tiers -->
+                </div><!--.flex-item.dash commodity in commodities -->
+            </div><!--.flex-container-->
+        </form>
+        <h6 class="text-center"
+            :class="{ caution: signState }"
+        v-text="signPriceState"></h6>
+        <div class="flex-container" style="justify-content: center;">
+            <button class="btn btn-info btn-lg flex-item"
+                    accesskey="1"
+                    v-show="1 < tiers.length"
+                    title="Button is only displayed if there is more than one price tier. Accesskey 1: Detail button"
+                    @click="toggleDetail()"
+            v-text="detailText"></button>
+            <button class="btn btn-warning btn-lg flex-item"
+                    accesskey="2"
+                    title="Reset the prices to state at last update and clear all unsaved changes. Accesskey 2: Reset button"
+                    :disabled="!signState"
+                    @click="resetPrices()"
+            >Reset Prices</button>
+            <button class="btn btn-danger btn-lg flex-item"
+                    accesskey="3"
+                    title="Changes are saved to sign. Accesskey 3: Update button"
+                    :disabled="!signState"
+                    @click="displayPricesReceived()"
+            >Update Sign</button>
+        </div>
+        <!--# all modal windows are using foundation.js for conceal reveal and vue.js to populate data-->
+        <!--Update simulation modals  -->
+        <div class="alert alert-warning text-center fade"
+             role="alert"
+             id="pricesSent"
+             aria-label="Close"
+             @click="dismissPricesSent"
+        >
+            <button class="close"
+                    type="button"
+                    aria-label="Close"
+                    @click="dismissPricesSent"
+            >
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h3>Prices submitted to signs.</h3>
+            <p>This could take several seconds...</p>
+            <p>(Simulated sign controller function.)</p>
+        </div>
+        <div class="alert alert-success text-center fade"
+             role="alert"
+             id="pricesReceived"
+             aria-label="Close"
+             @click="dismissPricesReceived"
+        >
+            <button class="close"
+                    type="button"
+                    aria-label="Close"
+                    @click="dismissPricesReceived"
+            >
+                <span aria-hidden="true">&times;</span>
+            </button>
+            <h3>Prices successfully updated on signs.</h3>
+            <p>(Simulated sign controller function.)</p>
+        </div>
+        <!--Commodity Tier Price modals -->
+        <div class="modal fade priceTiers"
+             tabindex="-1"
+             v-for="(commodity, c) in commodities"
+             :id="commodity.name"
+             :aria-labelledby="commodity.name+'Label'"
+        >
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button"
+                                class="close"
+                                data-dismiss="modal"
+                                aria-label="Close"
+                        >
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h2 class="text-center">Edit&nbsp;Tier&nbsp;Prices&nbsp;Form</h2>
+                        <h3 class="modal-title text-center"
+                            :id="commodity.name+'Label'"
+                        v-text="'Commodity: '+commodity.name"></h3>
+                    </div><!--.modal-header-->
+                    <div class="modal-body">
+                        <h6 class="text-center">This amount added to commodity base price.</h6>
+                        <form name="priceEditForm"
+                              class="flex-container"
+                              style="justify-content: center;"
+                              novalidate
+                        >
+                            <div class="flex-item priceGroup fg1">
+                                <input id="baseprice"
+                                       type="number" min="0" max="9.99" step="0.01"
+                                       title="Edit base price"
+                                       v-model="commodity.price"
+                                       @input="priceChange(commodity)"
+                                       style="max-width: 5em;"
+                                >
+                                <label for="baseprice"
+                                       class="text-center"
+                                       >Base Price</label>
+                                <div class="price"
+                                     :title="commodity.priceTitle"
+                                     v-text="commodity.price.toFixed(2)"></div>
+                            </div><!--.flex-item-->
+                            <div class="flex-item priceGroup fg1"
+                                 v-for="(tier, t) in tiers">
+                                <input :name="'price-tier'+t"
+                                       type="number" min="-1" max="1" step="0.01"
+                                       title="Edit tier price difference"
+                                       v-model="commodity.tierDiffs[t]"
+                                       @input="diffChange(commodity,t)"
+                                       style="max-width: 5em;"
+                                >
+                                <label :for="'price-tier'+t"
+                                       class="text-center"
+                                v-text="tier.name"></label>
+                                <div class="price"
+                                     :class="{ changed: commodity.priceChanged }"
+                                     :title="commodity.priceTitle"
+                                v-text="(commodity.price+commodity.tierDiffs[t]).toFixed(2)"></div>
+                            </div><!--.flex-item-->
+                        </form>
+                        <h6 class="text-center"
+                            :class="{ caution: signState }"
+                        v-text="signPriceState"></h6>
+                    </div><!--.modal-body-->
+                    <div class="modal-footer">
+                        <div class="flex-container" style="margin-bottom: 1em;">
+                            <button class="btn btn-primary flex-item fg1"
+                                    v-for="tab in commodities"
+                                    v-show="tab.id != commodity.id"
+                                    :title="'Edit price tiers for commodity: '+tab.name"
+                                    @click="switchModal(commodity.name,tab.name)"
+
+                            v-text="tab.name"></button>
+                        </div>
+                        <button class="btn btn-danger btn-lg flex-item"
+                                accesskey="3"
+                                title="Changes are saved to sign. Accesskey 3: Update button"
+                                :disabled="!signState"
+                                @click="displayPricesReceived(commodity.name)"
+                                data-dismiss="modal"
+                        >Update Sign</button>
+                        <button type="button"
+                                class="btn btn-warning btn-lg price-button"
+                                accesskey="2"
+                                :disabled="!signState"
+                                title="The Reset button resets the form to it&rsquo;s condition just after the last Update."
+                                @click="resetPrices()"
+                        >Reset Prices</button>
+                        <button type="button"
+                                class="btn btn-default btn-lg"
+                                data-dismiss="modal"
+                        >Close</button>
+                    </div><!--.modal-footer-->
+                </div><!--.modal-content-->
+            </div><!--.modal-dialog-->
+        </div><!--.modal commodity in commodities-->
+<!--
+            <div class="flex-container" style="margin-top: 1em;">
+            </div>&lt;!&ndash;.flex-container&ndash;&gt;
+-->
+        </div><!--#commidities-modal-->
+    </main>
+
+
+    <script src="https://unpkg.com/vue@2.1.6/dist/vue.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
