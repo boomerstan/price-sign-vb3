@@ -109,7 +109,7 @@ new Vue({
                     commodity.tierDiffsChanged.push(false);
                 })
             });
-            this.signPrice = sames;
+            this.priceState();
         },
         priceChange: function (commodity) {
             commodity.priceChanged = commodity.price != commodity.reset;
@@ -120,22 +120,6 @@ new Vue({
             commodity.tierDiffsChanged[tier] = commodity.tierDiffs[tier] != commodity.resetTierDiffs[tier];
             commodity.priceTitle = commodity.tierDiffsChanged[tier] ? diff : same;
             this.priceState();
-        },
-        dismissPricesReceived: function () {
-            $('#pricesReceived').removeClass('in');
-            this.updatePrices();
-        },
-        dismissPricesSent: function () {
-            $('#pricesSent').removeClass('in');
-            $('#pricesReceived').addClass('in');
-        },
-        displayPricesReceived: function (modal) {
-            if(modal) $('#'+modal).modal('toggle');
-            $('#pricesSent').addClass('in');
-        },
-        switchModal: function (current, next) {
-            $('#'+current).modal('toggle');
-            $('#'+next).modal('toggle');
         },
         priceState: function () {
             let state = sames;
@@ -163,6 +147,23 @@ new Vue({
                 })
             });
             this.priceState();
+        },
+        /* bootstrap specific methods */
+        dismissPricesReceived: function () {
+            $('#pricesReceived').removeClass('in');
+            this.updatePrices();
+        },
+        dismissPricesSent: function () {
+            $('#pricesSent').removeClass('in');
+            $('#pricesReceived').addClass('in');
+        },
+        displayPricesReceived: function (modal) {
+            if(modal) $('#'+modal).modal('toggle');
+            $('#pricesSent').addClass('in');
+        },
+        switchModal: function (current, next) {
+            $('#'+current).modal('toggle');
+            $('#'+next).modal('toggle');
         }
     }
 });
